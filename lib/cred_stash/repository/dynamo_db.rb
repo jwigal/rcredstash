@@ -1,6 +1,7 @@
 module CredStash::Repository
   class DynamoDB
     include CredStash::Benchmark
+    extend CredStash::Benchmark
     def initialize(client: nil)
       @client = client || Aws::DynamoDB::Client.new
     end

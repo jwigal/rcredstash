@@ -2,6 +2,7 @@ require 'aws-sdk-kms'
 
 class CredStash::CipherKey
   include CredStash::Benchmark
+  extend CredStash::Benchmark
   DEFAULT_KMS_KEY_ID = "alias/credstash".freeze
 
   attr_reader :data_key, :hmac_key, :wrapped_key

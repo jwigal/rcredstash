@@ -1,7 +1,10 @@
+require 'cred_stash/benchmark'
 module CredStash
   class << self
+    include CredStash::Benchmark
     def get(name, context: {}, raise_if_missing: false)
-      secret = Secret.find(name, context: context)
+
+      secret = benchmark('secret.find') { Secret.find(name, context: context) }
 
       if secret.falsified?
         raise "Invalid secret. #{name} has falsified"
@@ -48,7 +51,6 @@ module CredStash
   end
 end
 
-require 'cred_stash/benchmark'
 require 'cred_stash/config'
 require 'cred_stash/cipher_key'
 require 'cred_stash/cipher'
