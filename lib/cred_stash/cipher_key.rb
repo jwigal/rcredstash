@@ -1,6 +1,7 @@
 require 'aws-sdk-kms'
 
 class CredStash::CipherKey
+  include CredStash::Benchmark
   DEFAULT_KMS_KEY_ID = "alias/credstash".freeze
 
   attr_reader :data_key, :hmac_key, :wrapped_key
@@ -20,7 +21,7 @@ class CredStash::CipherKey
   end
 
   def self.decrypt(wrapped_key, client: Aws::KMS::Client.new, context: {})
-    res = client.decrypt(ciphertext_blob: wrapped_key, encryption_context: context)
+    res = benchmark('KMS client decrypt') { client.decrypt(ciphertext_blob: wrapped_key, encryption_context: context) }
     new(
       data_key: res.plaintext[0...32],
       hmac_key: res.plaintext[32..-1],

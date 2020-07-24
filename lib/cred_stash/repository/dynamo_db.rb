@@ -1,13 +1,16 @@
 module CredStash::Repository
   class DynamoDB
+    include CredStash::Benchmark
     def initialize(client: nil)
       @client = client || Aws::DynamoDB::Client.new
     end
 
     def get(name)
-      select(name, limit: 1).first.tap do |item|
-        unless item
-          raise CredStash::ItemNotFound, "#{name} is not found"
+      benchmark 'dynamodb get' do
+        select(name, limit: 1).first.tap do |item|
+          unless item
+            raise CredStash::ItemNotFound, "#{name} is not found"
+          end
         end
       end
     end
@@ -41,18 +44,21 @@ module CredStash::Repository
     end
 
     def put(item)
-      @client.put_item(
-        table_name: CredStash.config.table_name,
-        item: {
-          name: item.name,
-          version: item.version,
-          key: item.key,
-          contents: item.contents,
-          hmac: item.hmac
-        },
-        condition_expression: "attribute_not_exists(#name)",
-        expression_attribute_names: { "#name" => "name" },
-      )
+      benchmark 'dynamodb put' do
+        @client.put_item(
+          table_name: CredStash.config.table_name,
+          item: {
+            name: item.name,
+            version: item.version,
+            key: item.key,
+            contents: item.contents,
+            hmac: item.hmac
+          },
+          condition_expression: "attribute_not_exists(#name)",
+          expression_attribute_names: { "#name" => "name" },
+        )
+
+      end
     end
 
     def list
